@@ -1,3 +1,8 @@
+export type StatusType = 'not_started' | 'scheduled' | 'posted';
+export type AuthorFilter = 'all' | 'Tim' | 'Dylan' | 'Scafold';
+export type PlatformFilter = 'all' | 'LinkedIn' | 'Instagram';
+export type WeekFilter = 'all' | 'Week 0' | 'Week 1' | 'Week 2' | 'Week 3-4';
+
 export interface Post {
   id: number;
   postNumber: number;
@@ -13,7 +18,7 @@ export interface Post {
   cta: string;
   hashtags: string;
   postingTime: string;
-  status: string;
+  status: StatusType;
   postedAt: string | null;
   notes: string;
   sortOrder: number;
@@ -36,8 +41,3 @@ export interface PostStats {
   notStarted: number;
   nextUp: Post | null;
 }
-
-export type StatusType = 'not_started' | 'scheduled' | 'posted';
-export type AuthorFilter = 'all' | 'Tim' | 'Dylan' | 'Scafold';
-export type PlatformFilter = 'all' | 'LinkedIn' | 'Instagram';
-export type WeekFilter = 'all' | 'Week 0' | 'Week 1' | 'Week 2' | 'Week 3-4';

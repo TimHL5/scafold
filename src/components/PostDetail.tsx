@@ -3,7 +3,17 @@
 import { Post } from '@/lib/types';
 import CopyButton from './CopyButton';
 
-export default function PostDetail({ post }: { post: Post }) {
+export default function PostDetail({
+  post,
+  notesValue,
+  onNotesValueChange,
+  onNotesSave,
+}: {
+  post: Post;
+  notesValue: string;
+  onNotesValueChange: (v: string) => void;
+  onNotesSave: () => void;
+}) {
   const wordCount = post.body.split(/\s+/).filter(Boolean).length;
   const charCount = post.body.length;
   const hashtags = post.hashtags
@@ -31,6 +41,28 @@ export default function PostDetail({ post }: { post: Post }) {
           <p className="text-sm text-text-secondary">{post.visualDescription}</p>
         </div>
       )}
+
+      {/* Platform posting rules */}
+      <div className="bg-white/[0.02] border border-border-subtle rounded-lg p-4">
+        <h4 className="text-xs font-medium text-text-tertiary mb-2">Posting Guidelines</h4>
+        <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-text-secondary">
+          {post.platform === 'LinkedIn' ? (
+            <>
+              <span>Length: 150-400 words</span>
+              <span>Time: 7-10 AM ET</span>
+              <span>End with CTA</span>
+              <span>2-4 hashtags</span>
+            </>
+          ) : (
+            <>
+              <span>Caption: 100-250 words</span>
+              <span>Time: 9-11 AM or 6-8 PM ET</span>
+              <span>Clean, minimal visual</span>
+              <span>Stories for engagement</span>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* Stats row */}
       <div className="flex flex-wrap gap-4 text-xs text-text-tertiary">
@@ -60,6 +92,19 @@ export default function PostDetail({ post }: { post: Post }) {
           </div>
         </div>
       )}
+
+      {/* Notes (editable) */}
+      <div>
+        <span className="text-xs text-text-tertiary block mb-2">Notes:</span>
+        <textarea
+          value={notesValue}
+          onChange={(e) => onNotesValueChange(e.target.value)}
+          onBlur={onNotesSave}
+          placeholder="Add notes for this post..."
+          rows={3}
+          className="w-full bg-bg border border-border-subtle rounded px-3 py-2 text-sm text-text-primary placeholder-text-tertiary resize-y focus:outline-none focus:border-accent-blue/50"
+        />
+      </div>
     </div>
   );
 }

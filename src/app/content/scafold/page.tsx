@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Post, Idea, PostStats, StatusType, AuthorFilter, PlatformFilter, WeekFilter } from '@/lib/types';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Post, PostStats, StatusType, AuthorFilter, PlatformFilter, WeekFilter } from '@/lib/types';
+import { ALL_POSTS } from '@/data/posts';
+import { ALL_IDEAS } from '@/data/ideas';
+import { hydratePosts, savePostStatus, savePostNotes } from '@/lib/db';
 import ProgressBar from '@/components/ProgressBar';
 import TabNav from '@/components/TabNav';
 import FilterBar from '@/components/FilterBar';
@@ -10,106 +13,122 @@ import PostCard from '@/components/PostCard';
 import CalendarView from '@/components/CalendarView';
 import IdeasBank from '@/components/IdeasBank';
 import QuickReference from '@/components/QuickReference';
+import Toast, { showToast } from '@/components/Toast';
 
 type ViewMode = 'queue' | 'calendar';
 
+function computeStats(posts: Post[], author: AuthorFilter): PostStats {
+  const filtered = author === 'all' ? posts : posts.filter((p) => p.author === author);
+  const posted = filtered.filter((p) => p.status === 'posted').length;
+  const scheduled = filtered.filter((p) => p.status === 'scheduled').length;
+  const nextUp = filtered.find((p) => p.status !== 'posted') ?? null;
+  return {
+    total: filtered.length,
+    posted,
+    scheduled,
+    notStarted: filtered.length - posted - scheduled,
+    nextUp,
+  };
+}
+
 export default function ScafoldContentHub() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [ideas, setIdeas] = useState<Idea[]>([]);
-  const [stats, setStats] = useState<PostStats>({ total: 0, posted: 0, scheduled: 0, notStarted: 0, nextUp: null });
   const [activeTab, setActiveTab] = useState<AuthorFilter>('all');
   const [platformFilter, setPlatformFilter] = useState<PlatformFilter>('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [weekFilter, setWeekFilter] = useState<WeekFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('queue');
-  const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
 
-  const nextUpRef = useRef<HTMLDivElement>(null);
-
-  const fetchPosts = useCallback(async () => {
-    const params = new URLSearchParams();
-    if (activeTab !== 'all') params.set('author', activeTab);
-    if (platformFilter !== 'all') params.set('platform', platformFilter);
-    if (statusFilter !== 'all') params.set('status', statusFilter);
-    if (weekFilter !== 'all') params.set('week', weekFilter);
-
-    const res = await fetch(`/api/posts?${params}`);
-    const data = await res.json();
-    setPosts(data);
-  }, [activeTab, platformFilter, statusFilter, weekFilter]);
-
-  const fetchStats = useCallback(async () => {
-    const params = new URLSearchParams();
-    if (activeTab !== 'all') params.set('author', activeTab);
-    const res = await fetch(`/api/stats?${params}`);
-    const data = await res.json();
-    setStats(data);
-  }, [activeTab]);
-
-  const fetchIdeas = useCallback(async () => {
-    const res = await fetch('/api/ideas');
-    const data = await res.json();
-    setIdeas(data);
+  // Hydrate posts from localStorage on mount
+  useEffect(() => {
+    setPosts(hydratePosts(ALL_POSTS));
+    setReady(true);
   }, []);
 
+  // Keyboard shortcut: Escape clears search
   useEffect(() => {
-    Promise.all([fetchPosts(), fetchStats(), fetchIdeas()]).then(() => setLoading(false));
-  }, [fetchPosts, fetchStats, fetchIdeas]);
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && searchQuery) {
+        setSearchQuery('');
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [searchQuery]);
 
-  // Filter by search
+  // Filtered + searched posts
   const filteredPosts = useMemo(() => {
-    if (!searchQuery) return posts;
-    const q = searchQuery.toLowerCase();
-    return posts.filter(
-      (p) =>
-        p.body.toLowerCase().includes(q) ||
-        p.postType.toLowerCase().includes(q) ||
-        p.notes.toLowerCase().includes(q) ||
-        p.hashtags.toLowerCase().includes(q) ||
-        p.cta.toLowerCase().includes(q) ||
-        p.hook.toLowerCase().includes(q) ||
-        p.author.toLowerCase().includes(q)
-    );
-  }, [posts, searchQuery]);
+    let result = posts;
+    if (activeTab !== 'all') result = result.filter((p) => p.author === activeTab);
+    if (platformFilter !== 'all') result = result.filter((p) => p.platform === platformFilter);
+    if (statusFilter !== 'all') result = result.filter((p) => p.status === statusFilter);
+    if (weekFilter !== 'all') result = result.filter((p) => p.week === weekFilter);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.body.toLowerCase().includes(q) ||
+          p.postType.toLowerCase().includes(q) ||
+          p.notes.toLowerCase().includes(q) ||
+          p.hashtags.toLowerCase().includes(q) ||
+          p.cta.toLowerCase().includes(q) ||
+          p.hook.toLowerCase().includes(q) ||
+          p.author.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [posts, activeTab, platformFilter, statusFilter, weekFilter, searchQuery]);
 
-  const handleStatusChange = async (id: number, status: StatusType) => {
-    // Optimistic update
+  const stats = useMemo(() => computeStats(posts, activeTab), [posts, activeTab]);
+
+  const ideas = useMemo(() => ALL_IDEAS.filter((i) => !i.addedToQueue), []);
+
+  const handleStatusChange = useCallback((id: number, status: StatusType) => {
+    savePostStatus(id, status);
     setPosts((prev) =>
       prev.map((p) =>
         p.id === id
-          ? { ...p, status, postedAt: status === 'posted' ? new Date().toISOString() : null }
+          ? {
+              ...p,
+              status,
+              postedAt: status === 'posted'
+                ? (p.postedAt ?? new Date().toISOString())
+                : p.postedAt,
+            }
           : p
       )
     );
+    const labels: Record<StatusType, string> = {
+      not_started: 'Not Started',
+      scheduled: 'Scheduled',
+      posted: 'Posted',
+    };
+    showToast(`Status → ${labels[status]}`, status === 'posted' ? 'success' : 'info');
+  }, []);
 
-    await fetch(`/api/posts/${id}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-
-    fetchStats();
-  };
-
-  const handleNotesChange = async (id: number, notes: string) => {
+  const handleNotesChange = useCallback((id: number, notes: string) => {
+    savePostNotes(id, notes);
     setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, notes } : p)));
+  }, []);
 
-    await fetch(`/api/posts/${id}/notes`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ notes }),
-    });
-  };
-
-  const scrollToNextUp = () => {
+  const scrollToNextUp = useCallback(() => {
     if (stats.nextUp) {
-      const el = document.getElementById(`post-${stats.nextUp.id}`);
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById(`post-${stats.nextUp.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+  }, [stats.nextUp]);
+
+  // Clear all filters helper
+  const hasActiveFilters = platformFilter !== 'all' || statusFilter !== 'all' || weekFilter !== 'all' || searchQuery !== '';
+  const clearFilters = () => {
+    setPlatformFilter('all');
+    setStatusFilter('all');
+    setWeekFilter('all');
+    setSearchQuery('');
   };
 
-  if (loading) {
+  if (!ready) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center">
         <div className="text-text-tertiary text-sm">Loading content hub...</div>
@@ -119,6 +138,7 @@ export default function ScafoldContentHub() {
 
   return (
     <div className="min-h-screen bg-bg">
+      <Toast />
       <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -162,7 +182,7 @@ export default function ScafoldContentHub() {
         </div>
 
         {/* Filters */}
-        <div className="mb-6">
+        <div className="flex items-center gap-3 mb-6">
           <FilterBar
             platform={platformFilter}
             status={statusFilter}
@@ -171,17 +191,44 @@ export default function ScafoldContentHub() {
             onStatusChange={setStatusFilter}
             onWeekChange={setWeekFilter}
           />
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="text-xs text-text-tertiary hover:text-accent-vermillion transition-colors whitespace-nowrap"
+            >
+              Clear all
+            </button>
+          )}
         </div>
 
+        {/* Results count */}
+        {hasActiveFilters && filteredPosts.length > 0 && (
+          <p className="text-xs text-text-tertiary mb-3">
+            Showing {filteredPosts.length} of {posts.length} posts
+          </p>
+        )}
+
         {/* Content */}
-        {searchQuery && filteredPosts.length === 0 ? (
-          <div className="text-center py-12 text-text-tertiary text-sm">
-            No posts match &quot;{searchQuery}&quot;
+        {filteredPosts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-text-tertiary text-sm mb-3">
+              {searchQuery
+                ? `No posts match "${searchQuery}"`
+                : 'No posts match the current filters'}
+            </p>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="text-xs text-accent-blue hover:text-white transition-colors"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         ) : viewMode === 'queue' ? (
           <div className="space-y-3 mb-8">
             {filteredPosts.map((post) => (
-              <div key={post.id} id={`post-${post.id}`} ref={stats.nextUp?.id === post.id ? nextUpRef : undefined}>
+              <div key={post.id} id={`post-${post.id}`}>
                 <PostCard
                   post={post}
                   onStatusChange={handleStatusChange}

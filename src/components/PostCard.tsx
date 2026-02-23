@@ -22,7 +22,7 @@ export default function PostCard({
 
   const isPosted = post.status === 'posted';
 
-  const handleNotesBlur = () => {
+  const handleNotesSave = () => {
     if (notesValue !== post.notes) {
       onNotesChange(post.id, notesValue);
     }
@@ -30,6 +30,10 @@ export default function PostCard({
 
   const preview = post.body.split('\n').filter(Boolean).slice(0, 2).join(' ');
   const truncated = preview.length > 180 ? preview.slice(0, 180) + '...' : preview;
+
+  const hashtagList = post.hashtags
+    .split(/\s+/)
+    .filter((h) => h.startsWith('#'));
 
   return (
     <div
@@ -40,7 +44,7 @@ export default function PostCard({
       {/* Header row */}
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <StatusBadge
-          status={post.status as StatusType}
+          status={post.status}
           onChange={(s) => onStatusChange(post.id, s)}
         />
         <span className="text-xs text-text-tertiary">{post.week}</span>
@@ -77,7 +81,12 @@ export default function PostCard({
 
       {/* Expanded detail */}
       {expanded && (
-        <PostDetail post={post} />
+        <PostDetail
+          post={post}
+          notesValue={notesValue}
+          onNotesValueChange={setNotesValue}
+          onNotesSave={handleNotesSave}
+        />
       )}
 
       {/* Action row */}
@@ -101,29 +110,31 @@ export default function PostCard({
           </svg>
           {expanded ? 'Collapse' : 'View Full'}
         </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); setShowNotes(!showNotes); }}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors ${
-            showNotes || post.notes
-              ? 'text-accent-blue bg-accent-blue/10'
-              : 'text-text-secondary hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-          </svg>
-          Notes{post.notes ? ' *' : ''}
-        </button>
+        {!expanded && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowNotes(!showNotes); }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors ${
+              showNotes || post.notes
+                ? 'text-accent-blue bg-accent-blue/10'
+                : 'text-text-secondary hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Notes{post.notes ? ' *' : ''}
+          </button>
+        )}
       </div>
 
-      {/* Notes editor */}
-      {showNotes && (
+      {/* Notes editor (collapsed mode only — in expanded mode, notes are inside PostDetail) */}
+      {!expanded && showNotes && (
         <div className="mt-3 pt-3 border-t border-border-subtle">
           <textarea
             value={notesValue}
             onChange={(e) => setNotesValue(e.target.value)}
-            onBlur={handleNotesBlur}
+            onBlur={handleNotesSave}
             placeholder="Add notes..."
             rows={3}
             className="w-full bg-bg border border-border-subtle rounded px-3 py-2 text-sm text-text-primary placeholder-text-tertiary resize-y focus:outline-none focus:border-accent-blue/50"
@@ -131,18 +142,25 @@ export default function PostCard({
         </div>
       )}
 
-      {/* Meta row: CTA + hashtags */}
-      {!expanded && (post.cta || post.hashtags) && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 pt-3 border-t border-border-subtle">
+      {/* Meta row: CTA + individually copyable hashtags (collapsed only) */}
+      {!expanded && (post.cta || hashtagList.length > 0) && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-3 pt-3 border-t border-border-subtle">
           {post.cta && (
             <span className="text-xs text-text-tertiary">
               CTA: {post.cta}
             </span>
           )}
-          {post.hashtags && (
-            <span className="text-xs text-text-tertiary">
-              {post.hashtags}
-            </span>
+          {hashtagList.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              {hashtagList.map((tag) => (
+                <CopyButton
+                  key={tag}
+                  text={tag}
+                  label={tag}
+                  className="!text-[10px] !px-1.5 !py-0.5 !bg-white/5 !text-text-tertiary hover:!text-white hover:!bg-white/10"
+                />
+              ))}
+            </div>
           )}
         </div>
       )}

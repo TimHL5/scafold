@@ -1,33 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { Post } from '@/lib/types';
 
-const prisma = new PrismaClient();
-
-interface PostData {
-  postNumber: number;
-  week: string;
-  date: string;
-  dayOfWeek: string;
-  author: string;
-  platform: string;
-  postType: string;
-  hook: string;
-  body: string;
-  visualDescription: string;
-  cta: string;
-  hashtags: string;
-  postingTime: string;
-}
-
-interface IdeaData {
-  author: string;
-  platform: string;
-  concept: string;
-  fullDraft: string;
-  category: string;
-}
-
-const posts: PostData[] = [
+export const ALL_POSTS: Post[] = [
   {
+    id: 1,
     postNumber: 1,
     week: 'Week 0',
     date: 'Feb 22',
@@ -61,8 +36,13 @@ More next week.`,
     cta: 'More next week',
     hashtags: '#buildinpublic #startups #AI',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 1,
   },
   {
+    id: 2,
     postNumber: 2,
     week: 'Week 0',
     date: 'Feb 23',
@@ -92,8 +72,13 @@ Something's coming next week. It starts with one question.`,
     cta: "Something's coming next week",
     hashtags: '#entrepreneurship #startups #AI',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 2,
   },
   {
+    id: 3,
     postNumber: 3,
     week: 'Week 0',
     date: 'Feb 24',
@@ -129,8 +114,13 @@ scafold.ai`,
     cta: 'Coming this week → scafold.ai',
     hashtags: '',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 3,
   },
   {
+    id: 4,
     postNumber: 4,
     week: 'Week 0',
     date: 'Feb 24',
@@ -144,8 +134,13 @@ scafold.ai`,
     cta: 'That changes this week',
     hashtags: '#WhatBugsYou #scafold #AI #startup',
     postingTime: '9-11 AM or 6-8 PM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 4,
   },
   {
+    id: 5,
     postNumber: 5,
     week: 'Week 0',
     date: 'Feb 25',
@@ -181,8 +176,13 @@ Tomorrow I'll show you what we've been working on.`,
     cta: "Tomorrow I'll show you what we've been working on",
     hashtags: '',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 5,
   },
   {
+    id: 6,
     postNumber: 6,
     week: 'Week 0',
     date: 'Feb 26',
@@ -210,8 +210,13 @@ Thursday. scafold.ai.`,
     cta: 'Thursday → scafold.ai',
     hashtags: '#WhatBugsYou',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 6,
   },
   {
+    id: 7,
     postNumber: 7,
     week: 'Week 0',
     date: 'Feb 26',
@@ -225,8 +230,13 @@ Thursday. scafold.ai.`,
     cta: 'Thursday → Link in bio',
     hashtags: '#WhatBugsYou #scafold',
     postingTime: '9-11 AM or 6-8 PM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 7,
   },
   {
+    id: 8,
     postNumber: 8,
     week: 'Week 0',
     date: 'Feb 27',
@@ -254,8 +264,13 @@ scafold.ai — go there tomorrow morning.`,
     cta: 'scafold.ai — go there tomorrow morning',
     hashtags: '',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 8,
   },
   {
+    id: 9,
     postNumber: 9,
     week: 'Week 0',
     date: 'Feb 28',
@@ -285,8 +300,13 @@ See you in the morning.`,
     cta: 'See you in the morning → scafold.ai',
     hashtags: '#WhatBugsYou #scafold #launch #buildinpublic',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 9,
   },
   {
+    id: 10,
     postNumber: 10,
     week: 'Week 0',
     date: 'Feb 28',
@@ -300,8 +320,13 @@ See you in the morning.`,
     cta: 'What bugs you? → scafold.ai',
     hashtags: '#WhatBugsYou #scafold #launch',
     postingTime: '9-11 AM or 6-8 PM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 10,
   },
   {
+    id: 11,
     postNumber: 11,
     week: 'Week 1',
     date: 'Mar 1',
@@ -344,8 +369,13 @@ Today, we open the door.
     cta: '→ scafold.ai',
     hashtags: '#WhatBugsYou #scafold #launch #startups #AI #buildinpublic',
     postingTime: '8:00 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 11,
   },
   {
+    id: 12,
     postNumber: 12,
     week: 'Week 1',
     date: 'Mar 1',
@@ -353,7 +383,7 @@ Today, we open the door.
     author: 'Dylan',
     platform: 'LinkedIn',
     postType: 'The Product Story',
-    hook: 'We just launched Scafold. Here\'s what it does in 30 seconds.',
+    hook: "We just launched Scafold. Here's what it does in 30 seconds.",
     body: `We just launched Scafold. Here's what it does in 30 seconds:
 
 1. You tell us what frustrates you
@@ -376,8 +406,13 @@ Go tell us what bugs you → scafold.ai`,
     cta: 'Go tell us what bugs you → scafold.ai',
     hashtags: '#WhatBugsYou #scafold',
     postingTime: '8:30 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 12,
   },
   {
+    id: 13,
     postNumber: 13,
     week: 'Week 1',
     date: 'Mar 1',
@@ -409,8 +444,13 @@ Until now.
     cta: '→ scafold.ai',
     hashtags: '#WhatBugsYou',
     postingTime: '9:00 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 13,
   },
   {
+    id: 14,
     postNumber: 14,
     week: 'Week 1',
     date: 'Mar 1',
@@ -424,8 +464,13 @@ Until now.
     cta: 'Link in bio → scafold.ai',
     hashtags: '#WhatBugsYou #scafold #launch #AI #buildinpublic',
     postingTime: '9-11 AM or 6-8 PM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 14,
   },
   {
+    id: 15,
     postNumber: 15,
     week: 'Week 1',
     date: 'Mar 2',
@@ -433,7 +478,7 @@ Until now.
     author: 'Tim',
     platform: 'LinkedIn',
     postType: 'First Results',
-    hook: '24 hours ago we launched Scafold. Here\'s what happened.',
+    hook: "24 hours ago we launched Scafold. Here's what happened.",
     body: `24 hours ago we launched Scafold.
 
 Here's what happened:
@@ -464,8 +509,13 @@ Your turn → scafold.ai`,
     cta: 'Your turn → scafold.ai',
     hashtags: '#WhatBugsYou #scafold #buildinpublic',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 15,
   },
   {
+    id: 16,
     postNumber: 16,
     week: 'Week 1',
     date: 'Mar 2',
@@ -473,7 +523,7 @@ Your turn → scafold.ai`,
     author: 'Scafold',
     platform: 'Instagram',
     postType: 'Stats Card',
-    hook: '[X] frustrations in 24 hours. Here\'s what\'s bugging people most.',
+    hook: "[X] frustrations in 24 hours. Here's what's bugging people most.",
     body: `24 hours. [X] frustrations submitted. Here's what's bugging people most:
 
 1. [Category]
@@ -485,8 +535,13 @@ What's bugging you? Link in bio.`,
     cta: "What's bugging you? Link in bio",
     hashtags: '#WhatBugsYou #scafold #data',
     postingTime: '9-11 AM or 6-8 PM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 16,
   },
   {
+    id: 17,
     postNumber: 17,
     week: 'Week 1',
     date: 'Mar 3',
@@ -520,8 +575,13 @@ What are you frustrated about?
     cta: 'What are you frustrated about? → scafold.ai',
     hashtags: '#WhatBugsYou #FrustrationOfTheDay #scafold',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 17,
   },
   {
+    id: 18,
     postNumber: 18,
     week: 'Week 1',
     date: 'Mar 3',
@@ -543,8 +603,13 @@ Building in public. More coming.`,
     cta: 'Building in public. More coming.',
     hashtags: '#buildinpublic #founderslife #scafold #WhatBugsYou',
     postingTime: '9-11 AM or 6-8 PM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 18,
   },
   {
+    id: 19,
     postNumber: 19,
     week: 'Week 1',
     date: 'Mar 4',
@@ -581,8 +646,13 @@ Add yours → scafold.ai`,
     cta: 'Add yours → scafold.ai',
     hashtags: '#WhatBugsYou #scafold #data',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 19,
   },
   {
+    id: 20,
     postNumber: 20,
     week: 'Week 1',
     date: 'Mar 4',
@@ -590,7 +660,7 @@ Add yours → scafold.ai`,
     author: 'Scafold',
     platform: 'Instagram',
     postType: 'Data Visualization',
-    hook: '[X]+ frustrations collected. Here\'s what the data says.',
+    hook: "[X]+ frustrations collected. Here's what the data says.",
     body: `[X]+ frustrations collected. Here's what the data says:
 
 [X]% — [Category]
@@ -602,8 +672,13 @@ The pain points nobody's building for. Until now.`,
     cta: "The pain points nobody's building for. Until now.",
     hashtags: '#WhatBugsYou #scafold #data #AI',
     postingTime: '9-11 AM or 6-8 PM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 20,
   },
   {
+    id: 21,
     postNumber: 21,
     week: 'Week 1',
     date: 'Mar 5',
@@ -635,8 +710,13 @@ What's your frustration hiding?
     cta: "What's your frustration hiding? → scafold.ai",
     hashtags: '#WhatBugsYou #FrustrationOfTheDay #scafold #mentalhealth',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 21,
   },
   {
+    id: 22,
     postNumber: 22,
     week: 'Week 1',
     date: 'Mar 5',
@@ -671,8 +751,13 @@ Building in public means showing you the actual scoreboard. Here it is.`,
     cta: 'Building in public means showing you the actual scoreboard.',
     hashtags: '#buildinpublic #scafold #WhatBugsYou #startups',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 22,
   },
   {
+    id: 23,
     postNumber: 23,
     week: 'Week 1',
     date: 'Mar 6',
@@ -707,8 +792,13 @@ That's Scafold. Not another wrapper. The thing that tells you what's worth wrapp
     cta: '→ scafold.ai',
     hashtags: '#scafold #AI #WhatBugsYou',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 23,
   },
   {
+    id: 24,
     postNumber: 24,
     week: 'Week 1',
     date: 'Mar 6',
@@ -722,8 +812,13 @@ That's Scafold. Not another wrapper. The thing that tells you what's worth wrapp
     cta: 'What bugs you? → Link in bio',
     hashtags: '#WhatBugsYou #scafold #AI',
     postingTime: '9-11 AM or 6-8 PM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 24,
   },
   {
+    id: 25,
     postNumber: 25,
     week: 'Week 1',
     date: 'Mar 7',
@@ -760,8 +855,13 @@ Add your frustration to next week's report → scafold.ai`,
     cta: "Add your frustration to next week's report → scafold.ai",
     hashtags: '#WhatBugsYou #FrustrationReport #scafold',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 25,
   },
   {
+    id: 26,
     postNumber: 26,
     week: 'Week 1',
     date: 'Mar 7',
@@ -789,8 +889,13 @@ See you Monday.`,
     cta: "If you haven't told us what bugs you yet → scafold.ai",
     hashtags: '#scafold #WhatBugsYou #buildinpublic #week1',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 26,
   },
   {
+    id: 27,
     postNumber: 27,
     week: 'Week 2',
     date: 'Mar 8',
@@ -818,8 +923,13 @@ The frustration is the starting point. Everything else — the idea, the product
     cta: '→ scafold.ai',
     hashtags: '#YCombinator #scafold #WhatBugsYou #startups',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 27,
   },
   {
+    id: 28,
     postNumber: 28,
     week: 'Week 2',
     date: 'Mar 8',
@@ -851,8 +961,13 @@ What's your frustration worth?
     cta: "What's your frustration worth? → scafold.ai",
     hashtags: '#WhatBugsYou #FrustrationOfTheDay #scafold #college #edtech',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 28,
   },
   {
+    id: 29,
     postNumber: 29,
     week: 'Week 2',
     date: 'Mar 9',
@@ -887,8 +1002,13 @@ It's just human.
     cta: '→ scafold.ai',
     hashtags: '#scafold #WhatBugsYou #global #startups',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 29,
   },
   {
+    id: 30,
     postNumber: 30,
     week: 'Week 2',
     date: 'Mar 10',
@@ -918,8 +1038,13 @@ That's the Scafold thesis. Start with the pain. End with the plan.
     cta: '→ scafold.ai',
     hashtags: '#WhatBugsYou #FrustrationOfTheDay #scafold #fintech #personalfinance',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 30,
   },
   {
+    id: 31,
     postNumber: 31,
     week: 'Week 2',
     date: 'Mar 10',
@@ -941,8 +1066,13 @@ What bugs you? Tell us. Link in bio.`,
     cta: 'What bugs you? Tell us. Link in bio.',
     hashtags: '#founderslife #bostonCollege #scafold #WhatBugsYou #buildinpublic',
     postingTime: '9-11 AM or 6-8 PM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 31,
   },
   {
+    id: 32,
     postNumber: 32,
     week: 'Week 2',
     date: 'Mar 11',
@@ -978,8 +1108,13 @@ Both are valid. Both start with the same question.
     cta: '→ scafold.ai',
     hashtags: '#scafold #WhatBugsYou #career #buildinpublic #consulting',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 32,
   },
   {
+    id: 33,
     postNumber: 33,
     week: 'Week 2',
     date: 'Mar 12',
@@ -1011,8 +1146,13 @@ The dataset gets more valuable every week. Your frustration makes it stronger.
     cta: '→ scafold.ai',
     hashtags: '#WhatBugsYou #FrustrationReport #scafold',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 33,
   },
   {
+    id: 34,
     postNumber: 34,
     week: 'Week 3-4',
     date: 'Mar 15-28',
@@ -1049,8 +1189,13 @@ If you haven't told us what bugs you yet, you're sitting on an insight you don't
     cta: '→ scafold.ai',
     hashtags: '#scafold #WhatBugsYou #buildinpublic #30days',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 34,
   },
   {
+    id: 35,
     postNumber: 35,
     week: 'Week 3-4',
     date: 'Mar 15-28',
@@ -1083,8 +1228,13 @@ And it's spinning faster every week.
     cta: '→ scafold.ai',
     hashtags: '#scafold #WhatBugsYou #moat #startups #AI',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 35,
   },
   {
+    id: 36,
     postNumber: 36,
     week: 'Week 3-4',
     date: 'Mar 15-28',
@@ -1110,8 +1260,13 @@ Let's find out.
     cta: 'Or submit privately at scafold.ai',
     hashtags: '#WhatBugsYou #scafold',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 36,
   },
   {
+    id: 37,
     postNumber: 37,
     week: 'Week 3-4',
     date: 'Mar 15-28',
@@ -1143,248 +1298,9 @@ If you're in college and you're sitting on an idea: don't wait for the "right ti
     cta: '→ scafold.ai',
     hashtags: '#scafold #WhatBugsYou #college #seniorYear #bostonCollege #buildinpublic',
     postingTime: '7-10 AM ET',
+    status: 'not_started',
+    postedAt: null,
+    notes: '',
+    sortOrder: 37,
   },
 ];
-
-const ideas: IdeaData[] = [
-  // Scafold Brand Ideas
-  {
-    author: 'Scafold',
-    platform: 'LinkedIn',
-    concept: 'Stop asking ChatGPT if your startup idea is good. It will always say yes.',
-    fullDraft: `Stop asking ChatGPT if your startup idea is good. It will always say yes. It's a language model optimized for helpfulness, not honesty. It can't tell you if real people have this problem. It can't validate willingness to pay. It can't map the competitive landscape with actual commercial judgment. We built something that can. It starts with one question.`,
-    category: 'Contrarian',
-  },
-  {
-    author: 'Scafold',
-    platform: 'LinkedIn',
-    concept: "We collected 500+ frustrations in 72 hours. Here's what surprised us.",
-    fullDraft: `We collected 500+ frustrations from real people in 72 hours. Here's what surprised us: 34% are about work/career (not what we expected). 22% are about health/wellness. 18% are about money. The remaining 26% are things nobody is building for. The data is the moat.`,
-    category: 'Data',
-  },
-  {
-    author: 'Scafold',
-    platform: 'LinkedIn',
-    concept: '8 billion people. Every one has frustrations. Zero have a structured way to use them.',
-    fullDraft: `8 billion people on Earth. Every single one of them has frustrations. Zero of them have a structured way to turn those frustrations into solutions. Until now.`,
-    category: 'Manifesto',
-  },
-  {
-    author: 'Scafold',
-    platform: 'LinkedIn',
-    concept: '500+ students. 7 countries. $50K in revenue. Started from our own frustration.',
-    fullDraft: `500+ students. 7 countries. $50K in revenue. 3 years. And it started because Tim and I were frustrated that the smartest people we knew had no way to validate if their ideas were real. The irony isn't lost on us.`,
-    category: 'Social Proof',
-  },
-  {
-    author: 'Scafold',
-    platform: 'LinkedIn',
-    concept: 'The Scafold pipeline in 60 seconds.',
-    fullDraft: `The Scafold pipeline in 60 seconds: 1. You tell us what bugs you. 2. We identify if it's a real problem. 3. We find who else has it. 4. We map existing solutions (and why they fail). 5. We design something better. 6. We give you the blueprint. Most AI tools start at step 6. We start at step 1.`,
-    category: 'Process',
-  },
-  {
-    author: 'Scafold',
-    platform: 'LinkedIn',
-    concept: 'Reply with one thing that frustrates you. We\'ll analyze 3 from comments.',
-    fullDraft: `Reply with one thing that frustrates you about your daily life. We'll pick 3 and show exactly how Scafold would turn each one into a validated business idea. No AI fluff. Real analysis.`,
-    category: 'Challenge',
-  },
-  {
-    author: 'Scafold',
-    platform: 'LinkedIn',
-    concept: '1,000 frustrations collected. Here\'s what Gen Z actually wants built.',
-    fullDraft: `1,000 frustrations collected. Here's what the data tells us about what Gen Z actually wants built: [key findings]. The takeaway? Everyone talks about innovation. Nobody talks about listening.`,
-    category: 'Milestone',
-  },
-  // Tim Ideas
-  {
-    author: 'Tim',
-    platform: 'LinkedIn',
-    concept: "I'm 22. Signed PwC offer. About to ask YC to let me build something instead.",
-    fullDraft: `I'm 22. I have a signed offer from PwC. And I'm about to ask Y Combinator to let me build something instead.`,
-    category: 'PwC Tension',
-  },
-  {
-    author: 'Tim',
-    platform: 'LinkedIn',
-    concept: "Last semester at BC. Everyone's celebrating. I'm analyzing frustration data at 2am.",
-    fullDraft: `Last semester at Boston College. Everyone's celebrating. I'm analyzing frustration data at 2am. Here's why I wouldn't trade it.`,
-    category: 'Senior Year',
-  },
-  {
-    author: 'Tim',
-    platform: 'LinkedIn',
-    concept: 'Most people use ChatGPT to get answers. We built something that asks better questions.',
-    fullDraft: `Most people use ChatGPT to get answers. We built something that asks better questions. The difference is everything.`,
-    category: 'ChatGPT vs Scafold',
-  },
-  {
-    author: 'Tim',
-    platform: 'LinkedIn',
-    concept: "500 people told us their frustrations. One keeps me up at night about coding bootcamps.",
-    fullDraft: `500 people told us their biggest frustrations. One keeps me up at night: "I spent $50K on a coding bootcamp and still can't get hired." That's not a complaint. That's a $10B problem.`,
-    category: 'Powerful Frustration',
-  },
-  {
-    author: 'Tim',
-    platform: 'LinkedIn',
-    concept: "BC taught me business plans. Didn't teach me how to find problems worth solving.",
-    fullDraft: `Boston College taught me how to write business plans. It didn't teach me how to find problems worth solving. That's what Scafold fixes.`,
-    category: 'BC Insight',
-  },
-  {
-    author: 'Tim',
-    platform: 'LinkedIn',
-    concept: "Building an AI company without ever taking an AI class.",
-    fullDraft: `I'm building an AI company and I've never taken an AI class. Turns out that might be an advantage — I'm not constrained by how it's "supposed" to work.`,
-    category: 'No AI Class',
-  },
-  // Dylan Ideas
-  {
-    author: 'Dylan',
-    platform: 'LinkedIn',
-    concept: "3 companies. First two failed because we built the wrong thing.",
-    fullDraft: `I've started 3 companies. The first two failed because we built the wrong thing. Scafold exists so nobody else has to make that mistake.`,
-    category: '3-Company Arc',
-  },
-  {
-    author: 'Dylan',
-    platform: 'LinkedIn',
-    concept: "3 years manual guidance for 500+ people. Now automating with AI.",
-    fullDraft: `We spent 3 years manually guiding 500+ people through frustration-to-product. Now we're automating it with AI. Here's what we kept human — and what we didn't.`,
-    category: 'Manual to Automated',
-  },
-  {
-    author: 'Dylan',
-    platform: 'LinkedIn',
-    concept: "The most important dataset in AI isn't training data. It's frustration data.",
-    fullDraft: `The most important dataset in AI isn't training data. It's frustration data. Here's why.`,
-    category: 'Frustration Data as Moat',
-  },
-  {
-    author: 'Dylan',
-    platform: 'LinkedIn',
-    concept: "From Hong Kong to Singapore — what I learned about universal frustration.",
-    fullDraft: `From Hong Kong to Ho Chi Minh City to Singapore — what I learned about universal human frustration by building across 7 countries.`,
-    category: 'International Learning',
-  },
-  {
-    author: 'Dylan',
-    platform: 'LinkedIn',
-    concept: "We stopped asking 'What's your startup idea?' Results improved 10x.",
-    fullDraft: `The product decision that changed everything: We stopped asking "What's your startup idea?" and started asking "What bugs you?" Results improved 10x.`,
-    category: 'Product Pivot',
-  },
-  {
-    author: 'Dylan',
-    platform: 'LinkedIn',
-    concept: "How a CEO and CFO actually build an AI company together.",
-    fullDraft: `Tim handles the numbers. I handle the product. Here's how a CEO and CFO actually build an AI company together — including the fights.`,
-    category: 'CEO + CFO Dynamic',
-  },
-  {
-    author: 'Dylan',
-    platform: 'LinkedIn',
-    concept: "Everyone's building AI copilots. We're building AI commercial instinct.",
-    fullDraft: `Everyone's building AI copilots. We're building AI commercial instinct. One does what you ask. The other tells you what's worth asking.`,
-    category: 'Copilot vs Instinct',
-  },
-  {
-    author: 'Dylan',
-    platform: 'LinkedIn',
-    concept: "Samsung, Stripe, OpenAI speakers came to our events.",
-    fullDraft: `Samsung, Stripe, OpenAI — speakers from these companies came to our events. Here's what they said about the problem we're solving.`,
-    category: 'Speaker Series',
-  },
-  // Instagram Ideas
-  {
-    author: 'Scafold',
-    platform: 'Instagram',
-    concept: 'Frustration Quote Card — dark navy, vermillion accent, single quote.',
-    fullDraft: '',
-    category: 'Visual - Quote Card',
-  },
-  {
-    author: 'Scafold',
-    platform: 'Instagram',
-    concept: 'Data Visualization — pie chart of frustration categories.',
-    fullDraft: '',
-    category: 'Visual - Data',
-  },
-  {
-    author: 'Scafold',
-    platform: 'Instagram',
-    concept: '5 Frustrations Hiding Billion-Dollar Companies — carousel.',
-    fullDraft: '',
-    category: 'Carousel',
-  },
-  {
-    author: 'Scafold',
-    platform: 'Instagram',
-    concept: 'Founder Quote — "Everyone complains. Nobody gets paid for it. Until now."',
-    fullDraft: '',
-    category: 'Visual - Quote',
-  },
-];
-
-async function main() {
-  console.log('Seeding database...');
-
-  // Clear existing data
-  await prisma.idea.deleteMany();
-  await prisma.post.deleteMany();
-
-  // Insert posts
-  for (let i = 0; i < posts.length; i++) {
-    const p = posts[i];
-    await prisma.post.create({
-      data: {
-        postNumber: p.postNumber,
-        week: p.week,
-        date: p.date,
-        dayOfWeek: p.dayOfWeek,
-        author: p.author,
-        platform: p.platform,
-        postType: p.postType,
-        hook: p.hook,
-        body: p.body,
-        visualDescription: p.visualDescription,
-        cta: p.cta,
-        hashtags: p.hashtags,
-        postingTime: p.postingTime,
-        status: 'not_started',
-        notes: '',
-        sortOrder: i + 1,
-      },
-    });
-  }
-
-  console.log(`Inserted ${posts.length} posts.`);
-
-  // Insert ideas
-  for (const idea of ideas) {
-    await prisma.idea.create({
-      data: {
-        author: idea.author,
-        platform: idea.platform,
-        concept: idea.concept,
-        fullDraft: idea.fullDraft,
-        category: idea.category,
-        addedToQueue: false,
-      },
-    });
-  }
-
-  console.log(`Inserted ${ideas.length} ideas.`);
-  console.log('Seed complete!');
-}
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });

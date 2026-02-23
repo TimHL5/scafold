@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { showToast } from './Toast';
 
 export default function CopyButton({
   text,
@@ -29,6 +30,8 @@ export default function CopyButton({
       document.body.removeChild(textarea);
     }
     setCopied(true);
+    const preview = text.length > 40 ? text.slice(0, 40) + '…' : text;
+    showToast(`Copied: ${preview}`);
     setTimeout(() => setCopied(false), 2000);
   };
 
