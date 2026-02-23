@@ -73,3 +73,16 @@ export function savePostNotes(id: number, notes: string) {
   };
   saveState(state);
 }
+
+export function getStoredStateForMigration(): StoredState {
+  return getStoredState();
+}
+
+export function clearStoredState(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}

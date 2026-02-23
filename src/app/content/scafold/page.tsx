@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Post, PostStats, StatusType, AuthorFilter, PlatformFilter, WeekFilter } from '@/lib/types';
 import { ALL_POSTS } from '@/data/posts';
 import { ALL_IDEAS } from '@/data/ideas';
-import { hydratePosts, savePostStatus, savePostNotes } from '@/lib/db';
+import { hydratePosts, savePostStatus, savePostNotes, getStoredStateForMigration, clearStoredState } from '@/lib/db';
+import { fetchPostStates, syncStatus, syncNotes, migrateLocalState } from '@/lib/api';
 import ProgressBar from '@/components/ProgressBar';
 import TabNav from '@/components/TabNav';
 import FilterBar from '@/components/FilterBar';
@@ -41,10 +42,44 @@ export default function ScafoldContentHub() {
   const [viewMode, setViewMode] = useState<ViewMode>('queue');
   const [ready, setReady] = useState(false);
 
-  // Hydrate posts from localStorage on mount
+  // Load posts: try DB first, fall back to localStorage, auto-migrate if needed
   useEffect(() => {
-    setPosts(hydratePosts(ALL_POSTS));
-    setReady(true);
+    async function init() {
+      // Start with localStorage-hydrated posts as baseline
+      const hydrated = hydratePosts(ALL_POSTS);
+
+      const { states, source } = await fetchPostStates();
+
+      if (source === 'db' && Object.keys(states).length > 0) {
+        // DB has data — use it as source of truth
+        const dbHydrated = ALL_POSTS.map((post) => {
+          const saved = states[post.id];
+          if (!saved) return post;
+          return {
+            ...post,
+            status: (['not_started', 'scheduled', 'posted'].includes(saved.status)
+              ? saved.status : post.status) as StatusType,
+            postedAt: saved.postedAt,
+            notes: saved.notes,
+          };
+        });
+        setPosts(dbHydrated);
+      } else if (source === 'db') {
+        // DB connected but empty — migrate localStorage data if any
+        const localState = getStoredStateForMigration();
+        if (Object.keys(localState).length > 0) {
+          const migrated = await migrateLocalState(localState);
+          if (migrated) clearStoredState();
+        }
+        setPosts(hydrated);
+      } else {
+        // No DB or error — use localStorage (current behavior)
+        setPosts(hydrated);
+      }
+
+      setReady(true);
+    }
+    init();
   }, []);
 
   // Keyboard shortcut: Escape clears search
@@ -86,7 +121,9 @@ export default function ScafoldContentHub() {
   const ideas = useMemo(() => ALL_IDEAS.filter((i) => !i.addedToQueue), []);
 
   const handleStatusChange = useCallback((id: number, status: StatusType) => {
-    savePostStatus(id, status);
+    const postedAt = status === 'posted' ? new Date().toISOString() : null;
+
+    // Optimistic update
     setPosts((prev) =>
       prev.map((p) =>
         p.id === id
@@ -94,12 +131,17 @@ export default function ScafoldContentHub() {
               ...p,
               status,
               postedAt: status === 'posted'
-                ? (p.postedAt ?? new Date().toISOString())
+                ? (p.postedAt ?? postedAt)
                 : p.postedAt,
             }
           : p
       )
     );
+
+    // Dual-write: localStorage (fallback) + DB (primary)
+    savePostStatus(id, status);
+    syncStatus(id, status, postedAt);
+
     const labels: Record<StatusType, string> = {
       not_started: 'Not Started',
       scheduled: 'Scheduled',
@@ -109,8 +151,12 @@ export default function ScafoldContentHub() {
   }, []);
 
   const handleNotesChange = useCallback((id: number, notes: string) => {
-    savePostNotes(id, notes);
+    // Optimistic update
     setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, notes } : p)));
+
+    // Dual-write: localStorage (fallback) + DB (primary)
+    savePostNotes(id, notes);
+    syncNotes(id, notes);
   }, []);
 
   const scrollToNextUp = useCallback(() => {
