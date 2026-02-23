@@ -41,3 +41,26 @@ export interface PostStats {
   notStarted: number;
   nextUp: Post | null;
 }
+
+export type ContentVersion = 'A' | 'B';
+
+export interface HookOption {
+  label: string;
+  category: string;
+  hookText: string;
+  reasoning: string;
+}
+
+export interface PlatformOptimization {
+  linkedin: string;
+  instagram: string;
+}
+
+export interface PostVersionB {
+  postId: number;
+  hookOptions: HookOption[];
+  versionBBody: string;
+  versionBVisualDescription?: string;
+  platformOptimization: PlatformOptimization;
+  hasFullBody: boolean;
+}

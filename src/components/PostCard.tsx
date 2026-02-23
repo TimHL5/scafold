@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Post, StatusType } from '@/lib/types';
+import { Post, StatusType, ContentVersion } from '@/lib/types';
+import { getVersionB } from '@/data/postsVersionB';
 import StatusBadge from './StatusBadge';
 import PlatformBadge from './PlatformBadge';
 import CopyButton from './CopyButton';
@@ -19,6 +20,10 @@ export default function PostCard({
   const [expanded, setExpanded] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(post.notes);
+  const [activeVersion, setActiveVersion] = useState<ContentVersion>('A');
+
+  const versionB = getVersionB(post.id);
+  const hasVersionB = versionB && versionB.hasFullBody;
 
   const isPosted = post.status === 'posted';
 
@@ -28,7 +33,11 @@ export default function PostCard({
     }
   };
 
-  const preview = post.body.split('\n').filter(Boolean).slice(0, 2).join(' ');
+  const activeBody = activeVersion === 'B' && hasVersionB
+    ? versionB.versionBBody
+    : post.body;
+
+  const preview = activeBody.split('\n').filter(Boolean).slice(0, 2).join(' ');
   const truncated = preview.length > 180 ? preview.slice(0, 180) + '...' : preview;
 
   const hashtagList = post.hashtags
@@ -67,9 +76,18 @@ export default function PostCard({
         )}
       </div>
 
-      {/* Title */}
+      {/* Title + version badge */}
       <h3 className="text-[15px] font-semibold text-text-primary mb-2">
         {post.postType}
+        {hasVersionB && (
+          <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded font-medium align-middle ${
+            activeVersion === 'A'
+              ? 'bg-accent-blue/15 text-accent-blue'
+              : 'bg-accent-vermillion/15 text-accent-vermillion'
+          }`}>
+            v{activeVersion}
+          </span>
+        )}
       </h3>
 
       {/* Preview */}
@@ -86,12 +104,15 @@ export default function PostCard({
           notesValue={notesValue}
           onNotesValueChange={setNotesValue}
           onNotesSave={handleNotesSave}
+          activeVersion={activeVersion}
+          onVersionChange={setActiveVersion}
+          versionB={versionB}
         />
       )}
 
       {/* Action row */}
       <div className="flex flex-wrap items-center gap-2 mt-3">
-        <CopyButton text={post.body} label="Copy" className="!px-4 !py-2" />
+        <CopyButton text={activeBody} label="Copy" className="!px-4 !py-2" />
         <button
           onClick={() => setExpanded(!expanded)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors"
