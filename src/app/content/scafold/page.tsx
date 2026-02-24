@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Post, PostStats, StatusType, AuthorFilter, PlatformFilter, WeekFilter } from '@/lib/types';
+import { Post, PostStats, StatusType, AuthorFilter, PlatformFilter, WeekFilter, FormatFilter } from '@/lib/types';
 import { ALL_POSTS } from '@/data/posts';
 import { ALL_IDEAS } from '@/data/ideas';
-import { hydratePosts, savePostStatus, savePostNotes, getStoredStateForMigration, clearStoredState } from '@/lib/db';
+import { hydratePosts, savePostStatus, savePostNotes, savePostWinner, getStoredStateForMigration, clearStoredState } from '@/lib/db';
 import { fetchPostStates, syncStatus, syncNotes, migrateLocalState } from '@/lib/api';
+import WaitlistTracker from '@/components/WaitlistTracker';
 import ProgressBar from '@/components/ProgressBar';
 import TabNav from '@/components/TabNav';
 import FilterBar from '@/components/FilterBar';
@@ -14,6 +15,7 @@ import PostCard from '@/components/PostCard';
 import CalendarView from '@/components/CalendarView';
 import IdeasBank from '@/components/IdeasBank';
 import QuickReference from '@/components/QuickReference';
+import TrendingAudioGuide from '@/components/TrendingAudioGuide';
 import Toast, { showToast } from '@/components/Toast';
 
 type ViewMode = 'queue' | 'calendar';
@@ -38,6 +40,7 @@ export default function ScafoldContentHub() {
   const [platformFilter, setPlatformFilter] = useState<PlatformFilter>('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [weekFilter, setWeekFilter] = useState<WeekFilter>('all');
+  const [formatFilter, setFormatFilter] = useState<FormatFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('queue');
   const [ready, setReady] = useState(false);
@@ -100,6 +103,7 @@ export default function ScafoldContentHub() {
     if (platformFilter !== 'all') result = result.filter((p) => p.platform === platformFilter);
     if (statusFilter !== 'all') result = result.filter((p) => p.status === statusFilter);
     if (weekFilter !== 'all') result = result.filter((p) => p.week === weekFilter);
+    if (formatFilter !== 'all') result = result.filter((p) => p.format === formatFilter);
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -110,11 +114,12 @@ export default function ScafoldContentHub() {
           p.hashtags.toLowerCase().includes(q) ||
           p.cta.toLowerCase().includes(q) ||
           p.hook.toLowerCase().includes(q) ||
-          p.author.toLowerCase().includes(q)
+          p.author.toLowerCase().includes(q) ||
+          (p.caption && p.caption.toLowerCase().includes(q))
       );
     }
     return result;
-  }, [posts, activeTab, platformFilter, statusFilter, weekFilter, searchQuery]);
+  }, [posts, activeTab, platformFilter, statusFilter, weekFilter, formatFilter, searchQuery]);
 
   const stats = useMemo(() => computeStats(posts, activeTab), [posts, activeTab]);
 
@@ -159,6 +164,11 @@ export default function ScafoldContentHub() {
     syncNotes(id, notes);
   }, []);
 
+  const handleWinnerChange = useCallback((id: number, winner: 'a' | 'b' | null) => {
+    setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, winner } : p)));
+    savePostWinner(id, winner);
+  }, []);
+
   const scrollToNextUp = useCallback(() => {
     if (stats.nextUp) {
       document.getElementById(`post-${stats.nextUp.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -166,11 +176,12 @@ export default function ScafoldContentHub() {
   }, [stats.nextUp]);
 
   // Clear all filters helper
-  const hasActiveFilters = platformFilter !== 'all' || statusFilter !== 'all' || weekFilter !== 'all' || searchQuery !== '';
+  const hasActiveFilters = platformFilter !== 'all' || statusFilter !== 'all' || weekFilter !== 'all' || formatFilter !== 'all' || searchQuery !== '';
   const clearFilters = () => {
     setPlatformFilter('all');
     setStatusFilter('all');
     setWeekFilter('all');
+    setFormatFilter('all');
     setSearchQuery('');
   };
 
@@ -194,6 +205,9 @@ export default function ScafoldContentHub() {
           </h1>
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
         </div>
+
+        {/* Waitlist Tracker */}
+        <WaitlistTracker />
 
         {/* Progress Bar */}
         <div className="mb-6">
@@ -233,9 +247,11 @@ export default function ScafoldContentHub() {
             platform={platformFilter}
             status={statusFilter}
             week={weekFilter}
+            format={formatFilter}
             onPlatformChange={setPlatformFilter}
             onStatusChange={setStatusFilter}
             onWeekChange={setWeekFilter}
+            onFormatChange={setFormatFilter}
           />
           {hasActiveFilters && (
             <button
@@ -279,6 +295,7 @@ export default function ScafoldContentHub() {
                   post={post}
                   onStatusChange={handleStatusChange}
                   onNotesChange={handleNotesChange}
+                  onWinnerChange={handleWinnerChange}
                 />
               </div>
             ))}
@@ -295,8 +312,13 @@ export default function ScafoldContentHub() {
         </div>
 
         {/* Quick Reference */}
-        <div className="mb-8">
+        <div className="mb-4">
           <QuickReference />
+        </div>
+
+        {/* Trending Audio Guide */}
+        <div className="mb-8">
+          <TrendingAudioGuide />
         </div>
       </div>
     </div>

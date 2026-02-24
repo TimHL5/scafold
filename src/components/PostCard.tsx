@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { Post, StatusType, ContentVersion } from '@/lib/types';
-import { getVersionB } from '@/data/postsVersionB';
 import StatusBadge from './StatusBadge';
 import PlatformBadge from './PlatformBadge';
+import FormatBadge from './FormatBadge';
+import AudioBadge from './AudioBadge';
 import CopyButton from './CopyButton';
 import PostDetail from './PostDetail';
 
@@ -12,20 +13,21 @@ export default function PostCard({
   post,
   onStatusChange,
   onNotesChange,
+  onWinnerChange,
 }: {
   post: Post;
   onStatusChange: (id: number, status: StatusType) => void;
   onNotesChange: (id: number, notes: string) => void;
+  onWinnerChange?: (id: number, winner: 'a' | 'b' | null) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(post.notes);
   const [activeVersion, setActiveVersion] = useState<ContentVersion>('A');
 
-  const versionB = getVersionB(post.id);
-  const hasVersionB = versionB && versionB.hasFullBody;
-
+  const hasVersionB = !!post.bodyB;
   const isPosted = post.status === 'posted';
+  const isReel = post.format === 'reel_talking_head';
 
   const handleNotesSave = () => {
     if (notesValue !== post.notes) {
@@ -33,9 +35,11 @@ export default function PostCard({
     }
   };
 
-  const activeBody = activeVersion === 'B' && hasVersionB
-    ? versionB.versionBBody
-    : post.body;
+  // Version-aware content
+  const activeBody = activeVersion === 'B' && hasVersionB ? post.bodyB! : post.body;
+  const activeCaption = activeVersion === 'B' && hasVersionB ? (post.captionB ?? post.caption) : post.caption;
+  const activeAudio = activeVersion === 'B' && hasVersionB ? (post.audioB ?? post.audio) : post.audio;
+  const activeHook = activeVersion === 'B' && hasVersionB ? (post.hookB ?? post.hook) : post.hook;
 
   const preview = activeBody.split('\n').filter(Boolean).slice(0, 2).join(' ');
   const truncated = preview.length > 180 ? preview.slice(0, 180) + '...' : preview;
@@ -43,6 +47,14 @@ export default function PostCard({
   const hashtagList = post.hashtags
     .split(/\s+/)
     .filter((h) => h.startsWith('#'));
+
+  const handleWinnerToggle = () => {
+    if (!onWinnerChange) return;
+    if (post.winner === null) onWinnerChange(post.id, activeVersion === 'A' ? 'a' : 'b');
+    else if (post.winner === 'a' && activeVersion === 'B') onWinnerChange(post.id, 'b');
+    else if (post.winner === 'b' && activeVersion === 'A') onWinnerChange(post.id, 'a');
+    else onWinnerChange(post.id, null);
+  };
 
   return (
     <div
@@ -63,6 +75,7 @@ export default function PostCard({
         </span>
         <span className="text-xs text-text-tertiary">·</span>
         <PlatformBadge platform={post.platform} />
+        <FormatBadge format={post.format} duration={post.estimatedDuration} />
         {post.postingTime && (
           <>
             <span className="text-xs text-text-tertiary">·</span>
@@ -76,11 +89,11 @@ export default function PostCard({
         )}
       </div>
 
-      {/* Title + version badge */}
-      <h3 className="text-[15px] font-semibold text-text-primary mb-2">
-        {post.postType}
+      {/* Title + version badge + winner star */}
+      <h3 className="text-[15px] font-semibold text-text-primary mb-1 flex items-center gap-2">
+        <span>{post.postType}</span>
         {hasVersionB && (
-          <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded font-medium align-middle ${
+          <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
             activeVersion === 'A'
               ? 'bg-accent-blue/15 text-accent-blue'
               : 'bg-accent-vermillion/15 text-accent-vermillion'
@@ -88,11 +101,29 @@ export default function PostCard({
             v{activeVersion}
           </span>
         )}
+        {hasVersionB && (
+          <button
+            onClick={handleWinnerToggle}
+            className="text-sm hover:scale-110 transition-transform"
+            title={post.winner ? `Winner: Version ${post.winner.toUpperCase()}` : 'Mark winner'}
+          >
+            {post.winner === (activeVersion === 'A' ? 'a' : 'b') ? (
+              <span className="text-status-scheduled">★</span>
+            ) : (
+              <span className="text-text-tertiary">☆</span>
+            )}
+          </button>
+        )}
       </h3>
+
+      {/* Audio suggestion for Reels */}
+      {isReel && !expanded && (
+        <AudioBadge audio={activeAudio} />
+      )}
 
       {/* Preview */}
       {!expanded && (
-        <p className="text-sm text-text-secondary mb-3 leading-relaxed">
+        <p className="text-sm text-text-secondary mb-3 mt-2 leading-relaxed">
           {truncated}
         </p>
       )}
@@ -106,13 +137,21 @@ export default function PostCard({
           onNotesSave={handleNotesSave}
           activeVersion={activeVersion}
           onVersionChange={setActiveVersion}
-          versionB={versionB}
         />
       )}
 
       {/* Action row */}
       <div className="flex flex-wrap items-center gap-2 mt-3">
-        <CopyButton text={activeBody} label="Copy" className="!px-4 !py-2" />
+        {isReel ? (
+          <>
+            <CopyButton text={activeBody} label="Copy Script" className="!px-4 !py-2" />
+            {activeCaption && (
+              <CopyButton text={activeCaption} label="Copy Caption" className="!px-4 !py-2" />
+            )}
+          </>
+        ) : (
+          <CopyButton text={activeBody} label="Copy" className="!px-4 !py-2" />
+        )}
         <button
           onClick={() => setExpanded(!expanded)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors"
@@ -149,7 +188,7 @@ export default function PostCard({
         )}
       </div>
 
-      {/* Notes editor (collapsed mode only — in expanded mode, notes are inside PostDetail) */}
+      {/* Notes editor (collapsed mode only) */}
       {!expanded && showNotes && (
         <div className="mt-3 pt-3 border-t border-border-subtle">
           <textarea

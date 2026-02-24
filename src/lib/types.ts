@@ -1,7 +1,17 @@
 export type StatusType = 'not_started' | 'scheduled' | 'posted';
 export type AuthorFilter = 'all' | 'Tim' | 'Dylan' | 'Scafold';
 export type PlatformFilter = 'all' | 'LinkedIn' | 'Instagram';
-export type WeekFilter = 'all' | 'Week 0' | 'Week 1' | 'Week 2' | 'Week 3-4';
+export type WeekFilter = 'all' | 'Week 1' | 'Week 2' | 'Week 3' | 'Week 4' | 'Week 5' | 'Week 6' | 'Week 7' | 'Week 8' | 'Week 9' | 'Week 10+';
+export type FormatType = 'text_post' | 'reel_talking_head' | 'carousel' | 'story' | 'visual_card';
+export type FormatFilter = 'all' | FormatType;
+export type ContentVersion = 'A' | 'B';
+
+export interface HookOption {
+  label: string;
+  category: string;
+  hookText: string;
+  reasoning: string;
+}
 
 export interface Post {
   id: number;
@@ -22,6 +32,25 @@ export interface Post {
   postedAt: string | null;
   notes: string;
   sortOrder: number;
+
+  // V3 fields
+  format: FormatType;
+  caption: string | null;
+  audio: string | null;
+  estimatedDuration: string | null;
+  crossAmplification: string | null;
+
+  // Version B fields (inline)
+  bodyB: string | null;
+  captionB: string | null;
+  audioB: string | null;
+  hookB: string | null;
+
+  // Hook options (3 per post)
+  hookOptions: HookOption[] | null;
+
+  // Winner tracking
+  winner: 'a' | 'b' | null;
 }
 
 export interface Idea {
@@ -40,27 +69,4 @@ export interface PostStats {
   scheduled: number;
   notStarted: number;
   nextUp: Post | null;
-}
-
-export type ContentVersion = 'A' | 'B';
-
-export interface HookOption {
-  label: string;
-  category: string;
-  hookText: string;
-  reasoning: string;
-}
-
-export interface PlatformOptimization {
-  linkedin: string;
-  instagram: string;
-}
-
-export interface PostVersionB {
-  postId: number;
-  hookOptions: HookOption[];
-  versionBBody: string;
-  versionBVisualDescription?: string;
-  platformOptimization: PlatformOptimization;
-  hasFullBody: boolean;
 }

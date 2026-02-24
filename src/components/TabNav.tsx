@@ -4,8 +4,8 @@ import { AuthorFilter } from '@/lib/types';
 
 const TABS: { value: AuthorFilter; label: string }[] = [
   { value: 'all', label: 'All' },
-  { value: 'Tim', label: 'Tim' },
-  { value: 'Dylan', label: 'Dylan' },
+  { value: 'Tim', label: 'Tim (IG)' },
+  { value: 'Dylan', label: 'Dylan (LI)' },
   { value: 'Scafold', label: 'Scafold' },
 ];
 

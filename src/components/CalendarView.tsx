@@ -17,7 +17,7 @@ function parseDate(dateStr: string): Date | null {
   };
   const m = monthMap[month];
   if (m === undefined) return null;
-  return new Date(2025, m, parseInt(day));
+  return new Date(2026, m, parseInt(day));
 }
 
 const MONTH_NAMES = [
@@ -56,7 +56,7 @@ export default function CalendarView({
     if (key) monthSet.add(key);
   });
   const months = Array.from(monthSet).sort();
-  const initialMonth = months[0] || '2025-1';
+  const initialMonth = months[0] || '2026-1';
 
   const [activeMonth, setActiveMonth] = useState(initialMonth);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);

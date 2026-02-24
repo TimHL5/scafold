@@ -6,6 +6,7 @@ interface PostState {
   status: StatusType;
   postedAt: string | null;
   notes: string;
+  winner?: 'a' | 'b' | null;
 }
 
 type StoredState = Record<number, PostState>;
@@ -45,6 +46,7 @@ export function hydratePosts(posts: Post[]): Post[] {
       status: isValidStatus(saved.status) ? saved.status : post.status,
       postedAt: saved.postedAt,
       notes: saved.notes,
+      winner: saved.winner ?? post.winner,
     };
   });
 }
@@ -70,6 +72,18 @@ export function savePostNotes(id: number, notes: string) {
     status: state[id]?.status ?? 'not_started',
     postedAt: state[id]?.postedAt ?? null,
     notes,
+  };
+  saveState(state);
+}
+
+export function savePostWinner(id: number, winner: 'a' | 'b' | null) {
+  const state = getStoredState();
+  state[id] = {
+    ...state[id],
+    status: state[id]?.status ?? 'not_started',
+    postedAt: state[id]?.postedAt ?? null,
+    notes: state[id]?.notes ?? '',
+    winner,
   };
   saveState(state);
 }

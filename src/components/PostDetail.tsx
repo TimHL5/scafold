@@ -1,7 +1,9 @@
 'use client';
 
-import { Post, ContentVersion, PostVersionB } from '@/lib/types';
+import { Post, ContentVersion } from '@/lib/types';
 import CopyButton from './CopyButton';
+import FormatBadge from './FormatBadge';
+import AudioBadge from './AudioBadge';
 
 export default function PostDetail({
   post,
@@ -10,7 +12,6 @@ export default function PostDetail({
   onNotesSave,
   activeVersion,
   onVersionChange,
-  versionB,
 }: {
   post: Post;
   notesValue: string;
@@ -18,15 +19,15 @@ export default function PostDetail({
   onNotesSave: () => void;
   activeVersion: ContentVersion;
   onVersionChange: (v: ContentVersion) => void;
-  versionB: PostVersionB | null;
 }) {
-  const hasVersionB = versionB && versionB.hasFullBody;
-  const activeBody = activeVersion === 'B' && hasVersionB
-    ? versionB.versionBBody
-    : post.body;
-  const activeVisualDescription = activeVersion === 'B' && versionB?.versionBVisualDescription
-    ? versionB.versionBVisualDescription
-    : post.visualDescription;
+  const hasVersionB = !!post.bodyB;
+  const isReel = post.format === 'reel_talking_head';
+
+  // Version-aware content
+  const activeBody = activeVersion === 'B' && hasVersionB ? post.bodyB! : post.body;
+  const activeCaption = activeVersion === 'B' && hasVersionB ? (post.captionB ?? post.caption) : post.caption;
+  const activeAudio = activeVersion === 'B' && hasVersionB ? (post.audioB ?? post.audio) : post.audio;
+
   const wordCount = activeBody.split(/\s+/).filter(Boolean).length;
   const charCount = activeBody.length;
   const hashtags = post.hashtags
@@ -61,14 +62,24 @@ export default function PostDetail({
         </div>
       )}
 
-      {/* Hook options (Version B only) */}
-      {activeVersion === 'B' && versionB && versionB.hookOptions.length > 0 && (
+      {/* Format + Duration + Audio (Reels) */}
+      {isReel && (
+        <div className="flex flex-wrap items-center gap-3 p-3 bg-bg rounded-lg border border-border-subtle">
+          <FormatBadge format={post.format} duration={post.estimatedDuration} />
+          {activeAudio && (
+            <AudioBadge audio={activeAudio} />
+          )}
+        </div>
+      )}
+
+      {/* Hook options (all posts, both versions) */}
+      {post.hookOptions && post.hookOptions.length > 0 && (
         <div className="bg-bg rounded-lg border border-border-subtle overflow-hidden">
           <h4 className="text-xs font-medium text-text-tertiary px-4 pt-3 pb-2">
             Hook Options
           </h4>
           <div className="divide-y divide-border-subtle">
-            {versionB.hookOptions.map((hook, i) => (
+            {post.hookOptions.map((hook, i) => (
               <div key={i} className="px-4 py-3">
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div>
@@ -97,69 +108,89 @@ export default function PostDetail({
         </div>
       )}
 
-      {/* Full copy button */}
-      <CopyButton text={activeBody} label="Copy Full Post" className="!px-5 !py-2.5 !text-sm" />
-
-      {/* Full post body */}
-      <div className="bg-bg rounded-lg p-4 border border-border-subtle">
-        <pre className="text-sm text-text-primary whitespace-pre-wrap font-sans leading-relaxed">
-          {activeBody}
-        </pre>
+      {/* Copy buttons */}
+      <div className="flex flex-wrap gap-2">
+        {isReel ? (
+          <>
+            <CopyButton text={activeBody} label="Copy Script" className="!px-5 !py-2.5 !text-sm" />
+            {activeCaption && (
+              <CopyButton text={activeCaption} label="Copy Caption" className="!px-5 !py-2.5 !text-sm" />
+            )}
+          </>
+        ) : (
+          <CopyButton text={activeBody} label="Copy Full Post" className="!px-5 !py-2.5 !text-sm" />
+        )}
       </div>
 
-      {/* Visual description (Instagram) */}
-      {activeVisualDescription && (
+      {/* SCRIPT section (Reels) */}
+      {isReel && (
+        <div className="bg-bg rounded-lg p-4 border border-border-subtle">
+          <h4 className="text-xs font-medium text-accent-vermillion mb-2 uppercase tracking-wider">
+            Script
+          </h4>
+          <pre className="text-sm text-text-primary whitespace-pre-wrap font-sans leading-relaxed">
+            {activeBody}
+          </pre>
+        </div>
+      )}
+
+      {/* CAPTION section (Reels) */}
+      {isReel && activeCaption && (
+        <div className="bg-platform-instagram/5 border border-platform-instagram/20 rounded-lg p-4">
+          <h4 className="text-xs font-medium text-platform-instagram mb-2 uppercase tracking-wider">
+            Instagram Caption
+          </h4>
+          <pre className="text-sm text-text-primary whitespace-pre-wrap font-sans leading-relaxed">
+            {activeCaption}
+          </pre>
+        </div>
+      )}
+
+      {/* Full post body (non-Reel) */}
+      {!isReel && (
+        <div className="bg-bg rounded-lg p-4 border border-border-subtle">
+          <pre className="text-sm text-text-primary whitespace-pre-wrap font-sans leading-relaxed">
+            {activeBody}
+          </pre>
+        </div>
+      )}
+
+      {/* Visual / filming notes */}
+      {post.visualDescription && (
         <div className="bg-platform-instagram/5 border border-platform-instagram/20 rounded-lg p-4">
           <h4 className="text-xs font-medium text-platform-instagram mb-2">
-            Visual Description
+            {isReel ? 'Filming Notes' : 'Visual Description'}
           </h4>
-          <p className="text-sm text-text-secondary">{activeVisualDescription}</p>
+          <p className="text-sm text-text-secondary">{post.visualDescription}</p>
         </div>
       )}
 
-      {/* Platform optimization (Version B only) */}
-      {activeVersion === 'B' && versionB && (versionB.platformOptimization.linkedin || versionB.platformOptimization.instagram) && (
-        <div className="bg-accent-vermillion/5 border border-accent-vermillion/20 rounded-lg p-4">
-          <h4 className="text-xs font-medium text-accent-vermillion mb-3">
-            Platform Optimization
+      {/* Cross-amplification notes */}
+      {post.crossAmplification && (
+        <div className="bg-accent-blue/5 border border-accent-blue/20 rounded-lg p-4">
+          <h4 className="text-xs font-medium text-accent-blue mb-2">
+            Cross-Amplification
           </h4>
-          <div className="space-y-2">
-            {versionB.platformOptimization.linkedin && (
-              <div>
-                <span className="text-xs font-medium text-platform-linkedin">LinkedIn:</span>
-                <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
-                  {versionB.platformOptimization.linkedin}
-                </p>
-              </div>
-            )}
-            {versionB.platformOptimization.instagram && (
-              <div>
-                <span className="text-xs font-medium text-platform-instagram">Instagram:</span>
-                <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
-                  {versionB.platformOptimization.instagram}
-                </p>
-              </div>
-            )}
-          </div>
+          <p className="text-sm text-text-secondary">{post.crossAmplification}</p>
         </div>
       )}
 
-      {/* Platform posting rules */}
+      {/* Posting guidelines */}
       <div className="bg-white/[0.02] border border-border-subtle rounded-lg p-4">
         <h4 className="text-xs font-medium text-text-tertiary mb-2">Posting Guidelines</h4>
         <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-text-secondary">
           {post.platform === 'LinkedIn' ? (
             <>
-              <span>Length: 150-400 words</span>
-              <span>Time: 7-10 AM ET</span>
+              <span>Length: 200-400 words</span>
+              <span>Time: 7:30-8:30 AM ET</span>
               <span>End with CTA</span>
               <span>2-4 hashtags</span>
             </>
           ) : (
             <>
-              <span>Caption: 100-250 words</span>
-              <span>Time: 9-11 AM or 6-8 PM ET</span>
-              <span>Clean, minimal visual</span>
+              <span>Reel: 30-60 seconds</span>
+              <span>Time: 11AM-1PM or 6-8PM ET</span>
+              <span>iPhone selfie, natural lighting</span>
               <span>Stories for engagement</span>
             </>
           )}
@@ -172,6 +203,7 @@ export default function PostDetail({
         <span>{charCount} characters</span>
         {post.postingTime && <span>Post: {post.postingTime}</span>}
         <span>Author: {post.author}</span>
+        {post.estimatedDuration && <span>Duration: {post.estimatedDuration}</span>}
       </div>
 
       {/* CTA */}

@@ -5,12 +5,12 @@ import CopyButton from './CopyButton';
 
 const BRAND_VOICES = [
   {
-    name: 'Tim',
-    voice: 'Narrative-driven. Vulnerable. Real. Focus: personal journey, founder lessons, hard decisions. Avoid: hype, fake confidence, generic advice.',
+    name: 'Tim (Instagram)',
+    voice: 'Confident but not cocky. Smart friend at a coffee shop. iPhone selfie, natural lighting, casual backgrounds. Fast-paced, direct eye contact. Talking-head reels, 30-60 seconds.',
   },
   {
-    name: 'Dylan',
-    voice: 'Data-focused. Contrarian. Strategic. Focus: market insights, competitive moats, technical differentiation. Avoid: false humility, trendy takes, oversimplification.',
+    name: 'Dylan (LinkedIn)',
+    voice: 'Analytical. Contrarian. Data-first. Short paragraphs, strategic white space, framework-driven. 200-400 words. Original calculations, market reframes, "here\'s what nobody\'s talking about."',
   },
   {
     name: 'Scafold',
@@ -22,19 +22,21 @@ const PLATFORM_RULES = [
   {
     platform: 'LinkedIn',
     rules: [
-      'Optimal post length: 150-400 words narrative, 200-300 FotD',
-      'Post between 7-10 AM ET',
-      'Always end with CTA (→ scafold.ai)',
+      'Optimal post length: 200-400 words',
+      'Post between 7:30-8:30 AM ET (Tue-Thu strongest)',
+      'Always end with CTA: "Join the waitlist at scafold.ai"',
       'Use 2-4 relevant hashtags',
+      'Short paragraphs, strategic white space',
     ],
   },
   {
     platform: 'Instagram',
     rules: [
-      'Captions: 100-250 words max',
-      'Visual should be clean, minimal, on-brand',
-      'Stories for real-time engagement and polls',
-      'Post between 9-11 AM or 6-8 PM ET',
+      'Reels: 30-60 seconds, talking-head format',
+      'Post between 11AM-1PM or 6-8PM ET',
+      'iPhone selfie mode, natural lighting, no ring lights',
+      'Hook text on screen for first 2 seconds',
+      'Share to Stories with "Link in bio" sticker',
     ],
   },
 ];
@@ -75,6 +77,14 @@ export default function QuickReference() {
 
       {open && (
         <div className="px-5 pb-5 space-y-6">
+          {/* CTA Reminder */}
+          <div className="p-3 rounded bg-accent-vermillion/10 border border-accent-vermillion/20">
+            <p className="text-xs font-medium text-accent-vermillion mb-1">Waitlist-Only CTA</p>
+            <p className="text-xs text-text-secondary">
+              &ldquo;Join the waitlist at scafold.ai&rdquo; — NOT &ldquo;go use it.&rdquo; Product hasn&apos;t launched. First 10,000 get founding member access.
+            </p>
+          </div>
+
           {/* Brand Voices */}
           <div>
             <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-3">
@@ -105,7 +115,7 @@ export default function QuickReference() {
                   </span>
                   <ul className="mt-1 space-y-0.5">
                     {pr.rules.map((rule, i) => (
-                      <li key={i} className="text-xs text-text-secondary">· {rule}</li>
+                      <li key={i} className="text-xs text-text-secondary">&middot; {rule}</li>
                     ))}
                   </ul>
                 </div>
