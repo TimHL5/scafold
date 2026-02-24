@@ -23,27 +23,29 @@ export async function fetchPostStates(): Promise<FetchStateResponse> {
   }
 }
 
-export async function syncStatus(id: number, status: StatusType, postedAt: string | null): Promise<void> {
+export async function syncStatus(id: number, status: StatusType, postedAt: string | null): Promise<boolean> {
   try {
-    await fetch(`/api/posts/${id}/status`, {
+    const res = await fetch(`/api/posts/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status, postedAt }),
     });
+    return res.ok;
   } catch {
-    // Silently fail — optimistic update already applied
+    return false;
   }
 }
 
-export async function syncNotes(id: number, notes: string): Promise<void> {
+export async function syncNotes(id: number, notes: string): Promise<boolean> {
   try {
-    await fetch(`/api/posts/${id}/notes`, {
+    const res = await fetch(`/api/posts/${id}/notes`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ notes }),
     });
+    return res.ok;
   } catch {
-    // Silently fail — optimistic update already applied
+    return false;
   }
 }
 

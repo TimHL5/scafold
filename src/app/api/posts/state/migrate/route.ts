@@ -16,10 +16,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
+  const VALID_STATUSES = ['not_started', 'scheduled', 'posted'];
+
   try {
+    // Loop runs once per post; acceptable for bounded dataset (~50 posts max)
     for (const [idStr, state] of Object.entries(states)) {
       const postId = parseInt(idStr);
       if (isNaN(postId)) continue;
+      if (!VALID_STATUSES.includes(state.status)) continue;
       await sql`
         INSERT INTO post_state (post_id, status, posted_at, notes, updated_at)
         VALUES (${postId}, ${state.status}, ${state.postedAt ?? null}, ${state.notes}, NOW())

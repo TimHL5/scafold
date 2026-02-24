@@ -7,7 +7,7 @@ export async function PATCH(
 ) {
   const sql = getSQL();
   if (!sql) {
-    return NextResponse.json({ ok: true, source: 'none' });
+    return NextResponse.json({ ok: false, reason: 'no database' }, { status: 503 });
   }
 
   const { id } = await params;

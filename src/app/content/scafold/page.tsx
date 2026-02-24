@@ -140,7 +140,6 @@ export default function ScafoldContentHub() {
 
     // Dual-write: localStorage (fallback) + DB (primary)
     savePostStatus(id, status);
-    syncStatus(id, status, postedAt);
 
     const labels: Record<StatusType, string> = {
       not_started: 'Not Started',
@@ -148,6 +147,10 @@ export default function ScafoldContentHub() {
       posted: 'Posted',
     };
     showToast(`Status → ${labels[status]}`, status === 'posted' ? 'success' : 'info');
+
+    syncStatus(id, status, postedAt).then((ok) => {
+      if (!ok) showToast('Sync failed — saved locally', 'warning');
+    });
   }, []);
 
   const handleNotesChange = useCallback((id: number, notes: string) => {
@@ -156,7 +159,9 @@ export default function ScafoldContentHub() {
 
     // Dual-write: localStorage (fallback) + DB (primary)
     savePostNotes(id, notes);
-    syncNotes(id, notes);
+    syncNotes(id, notes).then((ok) => {
+      if (!ok) showToast('Notes sync failed — saved locally', 'warning');
+    });
   }, []);
 
   const scrollToNextUp = useCallback(() => {
